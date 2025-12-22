@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YBNThumb AI - Tạo Thumbnail Tỷ Lệ Click Cao</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#121212',
+                        darkcard: '#1e1e1e',
+                        accent: '#2563eb', // Blue
+                        highlight: '#facc15' // Yellow
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #121212; color: #e5e7eb; font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e1e1e; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        .glass-panel { background: rgba(30, 30, 30, 0.95); border: 1px solid #374151; }
+        /* Hiệu ứng load */
+        .loader { border-top-color: #3498db; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen custom-scrollbar">
+
+    <div id="apiKeyModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+        <div class="bg-darkcard p-8 rounded-2xl border border-yellow-600/50 w-full max-w-md shadow-2xl">
+            <h2 class="text-xl font-bold text-white mb-2 flex items-center">
+                <span class="text-yellow-500 mr-2">🔑</span> Cài đặt khóa API
+            </h2>
+            <p class="text-gray-400 text-sm mb-4">Key được lưu cục bộ trên trình duyệt của bạn (Riêng tư).</p>
+            <input type="password" id="apiKeyInput" placeholder="Dán API Key (AIza...)" class="w-full bg-black/50 border border-gray-600 rounded-lg p-3 text-white focus:border-yellow-500 outline-none mb-4">
+            <div class="flex gap-3">
+                <button onclick="saveApiKey()" class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 rounded-lg transition">Lưu Key</button>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-blue-400 flex items-center justify-center underline">Lấy key tại đây</a>
+            </div>
+        </div>
+    </div>
+
+    <header class="border-b border-gray-800 bg-darkcard/50 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">YBNThumb AI</h1>
+                    <p class="text-xs text-gray-400">Tối ưu hóa tỷ lệ Click (CTR)</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="clearKey()" class="px-3 py-1 text-xs border border-gray-700 rounded-full hover:bg-gray-800">🔑 Đổi Key</button>
+                <span class="px-3 py-1 text-xs bg-purple-900/50 text-purple-300 border border-purple-500/30 rounded-full">Pro Plan</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 pb-20">
+
+        <section id="step1" class="mb-10 animate-fade-in">
+            <div class="bg-darkcard border border-gray-700 rounded-2xl p-6 shadow-xl">
+                <label class="block text-sm font-semibold text-red-400 mb-2">Nội dung video / Ý tưởng kịch bản *</label>
+                <textarea id="videoInput" rows="4" class="w-full bg-[#121212] border border-gray-700 rounded-xl p-4 text-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition resize-none text-lg" placeholder="Ví dụ: Review iPhone 16 mới nhất, cảnh quay điện ảnh, tập trung vào camera..."></textarea>
+                
+                <div class="flex justify-between items-center mt-4">
+                    <button class="text-gray-400 hover:text-white text-sm flex items-center gap-2 border border-gray-700 px-4 py-2 rounded-lg hover:bg-gray-800 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Tải ảnh nền (Tùy chọn)
+                    </button>
+                    <button onclick="analyzeContent()" id="analyzeBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-blue-900/20 transition flex items-center gap-2">
+                        Phân tích & Gợi ý Văn bản
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <div id="loadingUI" class="hidden text-center py-10">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-700 h-12 w-12 mb-4 mx-auto"></div>
+            <p class="text-gray-400 animate-pulse">Đang phân tích tâm lý người xem & chiến lược CTR...</p>
+        </div>
+
+        <section id="step2" class="hidden space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-darkcard border border-gray-700 rounded-2xl p-6">
+                    <h3 class="text-blue-400 font-bold text-sm uppercase tracking-wider mb-2">Phân tích chiến lược</h3>
+                    <p id="strategyText" class="text-gray-300 text-sm leading-relaxed"></p>
+                </div>
+                <div class="bg-darkcard border border-gray-700 rounded-2xl p-6">
+                    <h3 class="text-gray-400 font-bold text-sm uppercase tracking-wider mb-2">Lý luận tâm lý</h3>
+                    <p id="reasoningText" class="text-gray-400 text-sm italic leading-relaxed"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-darkcard border border-gray-700 rounded-2xl p-6 lg:col-span-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-white">Chọn Văn bản số Ít nhất</h3>
+                        <button class="text-gray-500 hover:text-white">🔄</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4">AI đã tính toán tỷ lệ nhấp chuột (CTR) dự kiến:</p>
+                    <div id="textOptionsContainer" class="space-y-3">
+                        </div>
+                    <div class="mt-4 pt-4 border-t border-gray-700">
+                        <input type="text" id="customTextInput" placeholder="Nhập văn bản tùy chỉnh..." class="w-full bg-[#121212] border border-gray-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                </div>
+
+                <div class="bg-darkcard border border-gray-700 rounded-2xl p-6 lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
+                            Bố cục & Hiển thị
+                        </h3>
+                        <div class="flex gap-2">
+                            <button class="p-1 bg-blue-600 rounded text-white"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg></button>
+                            <button class="p-1 bg-gray-700 rounded text-gray-400"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg></button>
+                        </div>
+                    </div>
+                    
+                    <div class="relative w-full aspect-video bg-[#121212] border border-gray-700 rounded-lg overflow-hidden grid grid-cols-3 grid-rows-3 gap-[1px] bg-grid-pattern">
+                        <div class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
+                            <div class="border-r border-gray-800/50"></div><div class="border-r border-gray-800/50"></div><div></div>
+                            <div class="border-r border-gray-800/50 border-t border-gray-800/50"></div><div class="border-r border-gray-800/50 border-t border-gray-800/50"></div><div class="border-t border-gray-800/50"></div>
+                            <div class="border-r border-gray-800/50 border-t border-gray-800/50"></div><div class="border-r border-gray-800/50 border-t border-gray-800/50"></div><div class="border-t border-gray-800/50"></div>
+                        </div>
+
+                        <div id="previewText" class="absolute top-1/4 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-black font-bold px-4 py-2 text-xl uppercase shadow-lg z-20 cursor-move">
+                            NHẬP VĂN BẢN...
+                        </div>
+                        <div id="previewSubject" class="absolute bottom-0 right-1/4 translate-x-1/2 h-4/5 w-1/3 bg-gray-700/50 rounded-t-full border-2 border-dashed border-gray-500 flex items-center justify-center text-gray-400 z-10">
+                            <span class="text-xs">Chủ thể</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-darkcard border border-gray-700 rounded-2xl p-6">
+                
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-400 mb-3">🪟 Mẫu bố cục sẵn (Click để chọn)</h3>
+                    <div class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+                        <button onclick="selectLayout('classic')" class="flex-shrink-0 w-24 p-2 border border-gray-600 rounded hover:border-blue-500 bg-[#121212] group focus:ring-2 ring-blue-500">
+                            <div class="h-10 bg-gray-700 rounded mb-1 relative"><div class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full"></div><div class="absolute right-1 top-3 h-2 w-10 bg-yellow-500"></div></div>
+                            <div class="text-[10px] text-center text-gray-400 group-hover:text-white">CỔ ĐIỂN</div>
+                        </button>
+                        <button onclick="selectLayout('face_close')" class="flex-shrink-0 w-24 p-2 border border-gray-600 rounded hover:border-blue-500 bg-[#121212] group">
+                            <div class="h-10 bg-gray-700 rounded mb-1 relative flex justify-center items-end"><div class="w-8 h-8 bg-white rounded-t-full"></div></div>
+                            <div class="text-[10px] text-center text-gray-400 group-hover:text-white">ĐIỆN ẢNH</div>
+                        </button>
+                        <button onclick="selectLayout('versus')" class="flex-shrink-0 w-24 p-2 border border-gray-600 rounded hover:border-blue-500 bg-[#121212] group">
+                            <div class="h-10 bg-gray-700 rounded mb-1 relative flex justify-between px-1 items-center"><div class="w-3 h-3 bg-white rounded-full"></div><div class="w-1 h-6 bg-red-500"></div><div class="w-3 h-3 bg-white rounded-full"></div></div>
+                            <div class="text-[10px] text-center text-gray-400 group-hover:text-white">ĐỐI ĐẦU</div>
+                        </button>
+                         <button onclick="selectLayout('split')" class="flex-shrink-0 w-24 p-2 border border-gray-600 rounded hover:border-blue-500 bg-[#121212] group">
+                            <div class="h-10 bg-gray-700 rounded mb-1 relative flex"><div class="w-1/2 bg-gray-600"></div><div class="w-1/2 bg-gray-800"></div></div>
+                            <div class="text-[10px] text-center text-gray-400 group-hover:text-white">TÁCH RA</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs text-red-400 mb-1">👤 Chủ thể chính</label>
+                        <select id="subjectSelect" class="w-full bg-[#121212] border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-blue-500">
+                            <option value="Tự (Chân dung)">Tự (Self)</option>
+                            <option value="Nam">Nam giới</option>
+                            <option value="Nữ">Nữ giới</option>
+                            <option value="Vật thể/Sản phẩm">Sản phẩm (Điện thoại/Xe..)</option>
+                            <option value="Không có người">Cảnh vật</option>
+                        </select>
+                        <button class="mt-2 w-full text-xs border border-gray-700 rounded py-1 hover:bg-gray-800 text-gray-400">📷 Tải ảnh mặt</button>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-yellow-500 mb-1">T Hiệu ứng / Kiểu Văn bản</label>
+                        <select id="textStyleSelect" class="w-full bg-[#121212] border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-blue-500">
+                            <option value="3D Khối Nổi (Bắt mắt nhất)">3D Khối Nổi (Bắt mắt nhất)</option>
+                            <option value="Neon Phát Sáng">Neon Phát Sáng (Nổi bật)</option>
+                            <option value="Vàng Kim Loại">Vàng Kim Loại (Sang trọng)</option>
+                            <option value="Rách / Bẩn">Rách / Bẩn (Kinh dị/Game)</option>
+                            <option value="Truyện Tranh">Truyện Tranh (Pop Art)</option>
+                            <option value="Tối giản">Tối giản (Hiện đại)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-green-400 mb-1">☺ Cảm giác & Không khí</label>
+                        <select id="emotionSelect" class="w-full bg-[#121212] border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-blue-500">
+                            <option value="Auto">Auto (Theo chủ đề)</option>
+                            <option value="Sốc / Ngạc nhiên">Sốc / Ngạc nhiên 😱</option>
+                            <option value="Tức giận / Gay gắt">Tức giận / Gay gắt 😡</option>
+                            <option value="Phòng / Kinh dị">U ám / Kinh dị 👻</option>
+                            <option value="Vui vẻ / Hạnh phúc">Vui vẻ / Hạnh phúc 😄</option>
+                            <option value="Nghiêm túc / Chuyên gia">Nghiêm túc / Chuyên gia 🤓</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-purple-400 mb-1">🎨 Phong cách hình ảnh</label>
+                        <select id="artStyleSelect" class="w-full bg-[#121212] border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-blue-500">
+                            <option value="Siêu Thật (8k)">Siêu Thật (8k)</option>
+                            <option value="Hình ảnh 3D (Pixar)">Hình ảnh 3D (Pixar)</option>
+                            <option value="Phim hoạt hình / Anime">Anime / Manga</option>
+                            <option value="Cyberpunk / Neon">Cyberpunk / Neon</option>
+                            <option value="Minh họa Vector">Minh họa Vector</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-xs text-gray-500 mb-1">✏️ Lời nhắc / Ghi thêm</label>
+                    <input type="text" id="extraNote" placeholder="VD: Không dùng màu tối, thêm hiệu ứng cháy nổ..." class="w-full bg-[#121212] border border-gray-700 rounded-lg p-3 text-sm text-gray-300">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 mt-4">
+                <button onclick="resetFlow()" class="text-gray-400 hover:text-white text-sm">Làm lại từ đầu</button>
+                <button onclick="generateFinalPrompt()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-1">
+                    ✨ Tạo Prompt Chi Tiết
+                </button>
+            </div>
+        </section>
+
+        <section id="step3" class="hidden space-y-6 animate-fade-in">
+            <div class="bg-darkcard border border-gray-800 rounded-2xl p-0 overflow-hidden">
+                <div class="bg-gray-800/50 p-4 flex justify-between items-center border-b border-gray-700">
+                    <h3 class="font-bold text-blue-400">Nhắc tiếng Anh (Midjourney/DALL-E)</h3>
+                    <button onclick="copyText('englishPrompt')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded border border-gray-600 flex items-center gap-1">
+                        📄 Sao chép
+                    </button>
+                </div>
+                <div class="p-6 bg-[#151515]">
+                    <p id="englishPrompt" class="text-gray-300 text-sm leading-7 font-mono select-all">Loading...</p>
+                </div>
+                <div class="px-6 py-2 bg-gray-900/50 text-xs text-gray-500 border-t border-gray-800">
+                    Tham số: --ar 16:9 --v 6.0 --style raw
+                </div>
+            </div>
+
+            <div class="bg-darkcard border border-gray-800 rounded-2xl p-0 overflow-hidden">
+                <div class="bg-gray-800/50 p-4 flex justify-between items-center border-b border-gray-700">
+                    <h3 class="font-bold text-red-400">Nhắc Tiếng Việt (Mô tả chi tiết)</h3>
+                    <button onclick="copyText('vietnamesePrompt')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded border border-gray-600 flex items-center gap-1">
+                        📄 Sao chép
+                    </button>
+                </div>
+                <div class="p-6 bg-[#151515]">
+                    <p id="vietnamesePrompt" class="text-gray-300 text-sm leading-relaxed select-all">Loading...</p>
+                </div>
+            </div>
+
+             <div class="bg-darkcard border border-purple-900/30 rounded-2xl p-4 flex gap-4 items-center">
+                <div class="text-purple-400">🚀</div>
+                <input type="text" placeholder="Nhập yêu cầu chỉnh sửa (Ví dụ: Thêm sét vào nền, bỏ kính của nhân vật...)" class="flex-1 bg-transparent border-none focus:ring-0 text-sm text-white">
+                <button class="bg-purple-900/50 hover:bg-purple-800 text-purple-300 px-4 py-2 rounded-lg text-sm border border-purple-500/30">Đăng ký Prompt</button>
+            </div>
+            
+            <button onclick="document.getElementById('step3').classList.add('hidden'); document.getElementById('step2').classList.remove('hidden');" class="text-gray-500 text-sm underline w-full text-center">⬅ Quay lại chỉnh sửa</button>
+        </section>
+
+    </main>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // Global State
+        let selectedText = "";
+        let selectedLayout = "classic";
+        let analysisData = null;
+
+        // --- Functions Exposed to Window ---
+        window.saveApiKey = function() {
+            const key = document.getElementById('apiKeyInput').value;
+            if(key) {
+                localStorage.setItem('gemini_api_key', key);
+                document.getElementById('apiKeyModal').classList.add('hidden');
+            }
+        }
+
+        window.clearKey = function() {
+            localStorage.removeItem('gemini_api_key');
+            location.reload();
+        }
+
+        window.selectLayout = function(layout) {
+            selectedLayout = layout;
+            // Visual feedback handling could go here
+            alert("Đã chọn bố cục: " + layout);
+        }
+
+        window.selectText = function(text, element) {
+            selectedText = text;
+            document.getElementById('customTextInput').value = text;
+            document.getElementById('previewText').textContent = text;
+            
+            // Highlight UI
+            document.querySelectorAll('.text-option').forEach(el => el.classList.remove('border-yellow-500', 'bg-gray-800'));
+            element.classList.add('border-yellow-500', 'bg-gray-800');
+        }
+
+        window.copyText = function(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text);
+            alert("Đã sao chép!");
+        }
+
+        window.resetFlow = function() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+
+        // --- CORE LOGIC: STEP 1 ANALYZE ---
+        window.analyzeContent = async function() {
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (!apiKey) {
+                document.getElementById('apiKeyModal').classList.remove('hidden');
+                return;
+            }
+
+            const videoContent = document.getElementById('videoInput').value;
+            if (!videoContent) return alert("Vui lòng nhập nội dung!");
+
+            // UI Changes
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('loadingUI').classList.remove('hidden');
+
+            try {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+                const prompt = `
+                Analyze this YouTube video topic: "${videoContent}"
+                You are a YouTube Thumbnail expert. Return a JSON object with:
+                1. "strategy": A brief strategy analysis (Vietnamese).
+                2. "reasoning": Psychological reasoning for the strategy (Vietnamese).
+                3. "hooks": An array of 5 short text hooks (max 4 words) with estimated "ctr" (percentage).
+                4. "suggested_layout": Suggest one: "Classic", "Face Close-up", "Versus", "Split".
+                `;
+
+                const result = await model.generateContent(prompt);
+                const text = result.response.text();
+                // Clean JSON
+                const jsonStr = text.replace(/```json|```/g, '').trim();
+                analysisData = JSON.parse(jsonStr);
+
+                // Render Step 2
+                document.getElementById('loadingUI').classList.add('hidden');
+                document.getElementById('step2').classList.remove('hidden');
+
+                document.getElementById('strategyText').innerText = analysisData.strategy;
+                document.getElementById('reasoningText').innerText = analysisData.reasoning;
+
+                const textContainer = document.getElementById('textOptionsContainer');
+                textContainer.innerHTML = '';
+                analysisData.hooks.forEach(hook => {
+                    const div = document.createElement('div');
+                    div.className = "text-option p-3 border border-gray-700 rounded-lg cursor-pointer hover:bg-gray-800 flex justify-between items-center transition";
+                    div.onclick = () => window.selectText(hook.text, div);
+                    div.innerHTML = `
+                        <span class="font-bold text-white uppercase text-sm">"${hook.text}"</span>
+                        <span class="text-green-400 font-mono text-xs font-bold">${hook.ctr}%</span>
+                    `;
+                    textContainer.appendChild(div);
+                });
+
+                // Auto select first option
+                if(analysisData.hooks.length > 0) window.selectText(analysisData.hooks[0].text, textContainer.firstChild);
+
+            } catch (error) {
+                alert("Lỗi AI: " + error.message);
+                window.resetFlow();
+            }
+        }
+
+        // --- CORE LOGIC: STEP 2 GENERATE PROMPT ---
+        window.generateFinalPrompt = async function() {
+            const apiKey = localStorage.getItem('gemini_api_key');
+            const videoContent = document.getElementById('videoInput').value;
+            
+            // Get options
+            const subject = document.getElementById('subjectSelect').value;
+            const textStyle = document.getElementById('textStyleSelect').value;
+            const emotion = document.getElementById('emotionSelect').value;
+            const artStyle = document.getElementById('artStyleSelect').value;
+            const extraNote = document.getElementById('extraNote').value;
+            const finalHook = document.getElementById('customTextInput').value || selectedText;
+
+            // UI Transition
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('loadingUI').classList.remove('hidden'); // Reuse loader or make a new one
+
+            try {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+                const prompt = `
+                Role: Midjourney Prompt Engineer.
+                Input Data:
+                - Video Context: ${videoContent}
+                - Main Subject: ${subject}
+                - Text on Image: "${finalHook}"
+                - Text Style: ${textStyle}
+                - Emotion/Vibe: ${emotion}
+                - Art Style: ${artStyle}
+                - User Notes: ${extraNote}
+                - Layout Strategy: ${selectedLayout}
+
+                Task:
+                1. Create a "midjourney_prompt" (English): Extremely detailed, 8k, cinematic lighting, describing the subject, background, and the text element. Format: "[Subject Description], [Action/Emotion], [Background], [Lighting], text saying '${finalHook}' in ${textStyle} font, ${artStyle} style --ar 16:9 --v 6.0"
+                2. Create a "vietnamese_desc" (Vietnamese): Detailed description of the image for the user to understand.
+
+                Return JSON only: { "midjourney_prompt": "...", "vietnamese_desc": "..." }
+                `;
+
+                const result = await model.generateContent(prompt);
+                const text = result.response.text();
+                const jsonStr = text.replace(/```json|```/g, '').trim();
+                const finalData = JSON.parse(jsonStr);
+
+                // Render Step 3
+                document.getElementById('loadingUI').classList.add('hidden');
+                document.getElementById('step3').classList.remove('hidden');
+
+                document.getElementById('englishPrompt').innerText = finalData.midjourney_prompt;
+                document.getElementById('vietnamesePrompt').innerText = finalData.vietnamese_desc;
+
+            } catch (error) {
+                alert("Lỗi tạo prompt: " + error.message);
+                document.getElementById('step2').classList.remove('hidden');
+                document.getElementById('loadingUI').classList.add('hidden');
+            }
+        }
+
+        // Check Key on Load
+        window.onload = function() {
+            if(!localStorage.getItem('gemini_api_key')) {
+                document.getElementById('apiKeyModal').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
