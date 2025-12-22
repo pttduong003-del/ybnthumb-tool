@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YBNThumb AI - Gemini 2.0 Pro</title>
+    <title>YBNThumb AI - Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="importmap">
       {
@@ -18,98 +18,107 @@
             theme: {
                 extend: {
                     colors: {
-                        darkbg: '#09090b', 
-                        darkcard: '#18181b', 
-                        accent: '#3b82f6'
+                        darkbg: '#0f0f0f', 
+                        darkcard: '#1f1f1f', 
+                        accent: '#ff0000' // Red YouTube style
                     }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #09090b; color: #e4e4e7; font-family: 'Inter', sans-serif; }
-        .loader {
-            border: 4px solid #27272a;
-            border-top: 4px solid #3b82f6;
+        body { background-color: #0f0f0f; color: #f1f1f1; font-family: sans-serif; }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            border-left-color: #3b82f6;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-20">
 
-    <div id="apiKeyModal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center hidden">
-        <div class="bg-darkcard p-8 rounded-2xl border border-gray-800 w-full max-w-md">
-            <h2 class="text-xl font-bold text-white mb-4">🔑 Kết nối Gemini 2.0</h2>
-            <input type="password" id="apiKeyInput" placeholder="Dán API Key vào đây..." class="w-full bg-black/50 border border-gray-700 rounded-lg p-3 text-white mb-4">
-            <button onclick="saveApiKey()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg">Lưu & Bắt đầu</button>
-            <div class="mt-4 text-center">
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-blue-400 underline">Lấy API Key miễn phí tại đây</a>
+    <div id="apiKeyModal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center hidden">
+        <div class="bg-darkcard p-6 rounded-xl border border-gray-700 w-full max-w-md shadow-2xl">
+            <h2 class="text-xl font-bold mb-4">🔑 Cài đặt API Key</h2>
+            <p class="text-gray-400 text-sm mb-2">Để tool hoạt động, bạn cần nhập key Gemini.</p>
+            <input type="password" id="apiKeyInput" placeholder="AIza..." class="w-full bg-black border border-gray-600 rounded p-3 text-white mb-4 outline-none focus:border-blue-500">
+            <button onclick="saveApiKey()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded transition">Lưu & Tiếp tục</button>
+            <div class="mt-3 text-center">
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-400 text-xs underline">Lấy key miễn phí tại đây</a>
             </div>
         </div>
     </div>
 
-    <header class="border-b border-gray-800 bg-darkbg/80 sticky top-0 z-40 backdrop-blur-md">
-        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-lg font-bold text-white">YBNThumb <span class="text-blue-500">2.0</span></h1>
+    <header class="bg-darkcard border-b border-gray-800 p-4 sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="font-bold text-lg flex items-center gap-2">
+                <span class="text-red-600 text-2xl">▶</span> YBNThumb AI <span class="text-xs bg-gray-700 px-2 py-0.5 rounded text-gray-300">Stable</span>
+            </h1>
             <button onclick="clearKey()" class="text-xs text-gray-500 hover:text-white">Đổi Key</button>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-8">
+    <main class="max-w-4xl mx-auto p-4 mt-6">
 
-        <section id="step1" class="mb-10">
-            <div class="bg-darkcard border border-gray-800 rounded-2xl p-6">
-                <label class="block text-sm font-medium text-blue-400 mb-2">Ý tưởng Video / Chủ đề</label>
-                <textarea id="videoInput" rows="4" class="w-full bg-[#09090b] border border-gray-800 rounded-xl p-4 text-white focus:border-blue-500 outline-none text-lg" placeholder="Ví dụ: Bí ẩn kim tự tháp, phong cách huyền bí..."></textarea>
+        <div id="debugLog" class="hidden mb-6 p-3 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-xs font-mono break-all"></div>
+
+        <section id="step1">
+            <div class="bg-darkcard border border-gray-800 rounded-xl p-6 shadow-lg">
+                <label class="block text-sm font-bold text-gray-300 mb-2">Ý tưởng Video của bạn:</label>
+                <textarea id="videoInput" rows="4" class="w-full bg-[#121212] border border-gray-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none text-lg" placeholder="Ví dụ: Thử thách sinh tồn 24h trong rừng..."></textarea>
                 
-                <div class="flex justify-between items-center mt-4">
-                     <label class="text-gray-400 text-sm cursor-pointer hover:text-white flex items-center gap-2">
+                <div class="mt-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+                     <label class="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        <span id="imageLabel">Tải ảnh nền (Tùy chọn)</span>
-                        <input type="file" id="imageInput" class="hidden" accept="image/*" onchange="document.getElementById('imageLabel').innerText = this.files[0].name; document.getElementById('imageLabel').classList.add('text-blue-400')">
+                        <span id="imageLabel">Thêm ảnh nền (Tùy chọn)</span>
+                        <input type="file" id="imageInput" class="hidden" accept="image/*" onchange="document.getElementById('imageLabel').innerText = '✅ Đã chọn: ' + this.files[0].name; document.getElementById('imageLabel').classList.add('text-green-400')">
                     </label>
 
-                    <button onclick="analyzeContent()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2 rounded-xl transition">
-                        Phân tích Tư duy AI 🧠
+                    <button id="analyzeBtn" onclick="runAnalysis()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-lg shadow-lg transition transform hover:scale-105 flex items-center gap-2">
+                        <span>Phân tích ngay</span>
                     </button>
                 </div>
             </div>
         </section>
 
-        <div id="loadingUI" class="hidden flex flex-col items-center justify-center py-10">
-            <div class="loader mb-4"></div>
-            <p class="text-gray-400 animate-pulse">Gemini 2.0 đang suy luận...</p>
+        <div id="loadingUI" class="hidden flex flex-col items-center py-10">
+            <div class="spinner mb-4"></div>
+            <p class="text-gray-400 animate-pulse">Đang kết nối AI...</p>
         </div>
 
-        <section id="step2" class="hidden space-y-6">
+        <section id="step2" class="hidden mt-8 space-y-6">
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-darkcard border border-gray-800 p-4 rounded-xl">
-                    <h3 class="text-blue-500 font-bold text-xs uppercase mb-2">Chiến lược</h3>
-                    <p id="strategyText" class="text-sm text-gray-300"></p>
+                <div class="bg-darkcard border border-gray-800 p-5 rounded-xl">
+                    <h3 class="text-blue-400 font-bold text-xs uppercase mb-2">🎯 Chiến lược</h3>
+                    <p id="strategyText" class="text-gray-300 text-sm leading-relaxed"></p>
                 </div>
-                <div class="bg-darkcard border border-gray-800 p-4 rounded-xl">
-                    <h3 class="text-purple-500 font-bold text-xs uppercase mb-2">Tâm lý học</h3>
-                    <p id="reasoningText" class="text-sm text-gray-400 italic"></p>
-                </div>
-            </div>
-
-            <div id="textOptionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
-
-            <div class="bg-darkcard border border-gray-700 rounded-xl overflow-hidden mt-6">
-                <div class="bg-gray-800/50 p-3 border-b border-gray-700 flex justify-between">
-                    <span class="text-white font-bold text-sm">Prompt Midjourney / DALL-E 3</span>
-                    <button onclick="copyText('englishPrompt')" class="text-xs bg-blue-600 px-3 py-1 rounded text-white">Copy</button>
-                </div>
-                <div class="p-4 bg-black">
-                    <p id="englishPrompt" class="text-gray-300 font-mono text-sm leading-relaxed"></p>
+                <div class="bg-darkcard border border-gray-800 p-5 rounded-xl">
+                    <h3 class="text-purple-400 font-bold text-xs uppercase mb-2">🧠 Lý do thu hút</h3>
+                    <p id="reasoningText" class="text-gray-400 text-sm italic leading-relaxed"></p>
                 </div>
             </div>
 
-            <button onclick="location.reload()" class="w-full text-center text-gray-500 text-sm py-4 hover:text-white">Làm lại từ đầu</button>
+            <div class="bg-darkcard border border-gray-800 p-5 rounded-xl">
+                <h3 class="text-white font-bold mb-3">Hook Texts (Giật tít trên ảnh)</h3>
+                <div id="hooksContainer" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="bg-darkcard border border-gray-700 rounded-xl overflow-hidden">
+                <div class="bg-gray-800 p-3 flex justify-between items-center border-b border-gray-700">
+                    <span class="text-white font-bold text-sm">Prompt tạo ảnh (Copy cái này)</span>
+                    <button onclick="copyPrompt()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded">Sao chép</button>
+                </div>
+                <div class="p-4 bg-[#050505]">
+                    <p id="imagePrompt" class="text-gray-300 font-mono text-sm leading-7"></p>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="w-full py-4 text-gray-500 hover:text-white text-sm">🔄 Làm lại từ đầu</button>
         </section>
 
     </main>
@@ -117,77 +126,130 @@
     <script type="module">
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
-        // === CẤU HÌNH QUAN TRỌNG: Tên Model Mới Nhất ===
-        const MODEL_NAME = "gemini-2.0-flash-exp"; 
+        // === CẤU HÌNH MODEL ===
+        // Sử dụng phiên bản ổn định nhất để tránh lỗi treo
+        const MODEL_NAME = "gemini-1.5-flash"; 
 
-        window.saveApiKey = function() {
+        // Hàm ghi log lỗi ra màn hình để bạn dễ thấy
+        function logError(msg) {
+            const logBox = document.getElementById('debugLog');
+            logBox.classList.remove('hidden');
+            logBox.innerText = "LỖI: " + msg;
+            console.error(msg);
+            alert("Có lỗi xảy ra: " + msg + "\n\n(Hãy kiểm tra lại API Key hoặc mạng)");
+        }
+
+        // Các hàm tiện ích
+        window.saveApiKey = () => {
             const key = document.getElementById('apiKeyInput').value;
-            if(key) { localStorage.setItem('gemini_api_key', key); document.getElementById('apiKeyModal').classList.add('hidden'); }
-        }
-        window.clearKey = function() { localStorage.removeItem('gemini_api_key'); location.reload(); }
-        window.copyText = function(id) { navigator.clipboard.writeText(document.getElementById(id).innerText); alert("Đã copy!"); }
-
-        // Hàm làm sạch JSON (Quan trọng cho Gemini 2.0)
-        function cleanJSON(text) {
-            const start = text.indexOf('{'); const end = text.lastIndexOf('}');
-            if (start !== -1 && end !== -1) return JSON.parse(text.substring(start, end + 1));
-            return null;
+            if (key) {
+                localStorage.setItem('gemini_api_key', key);
+                document.getElementById('apiKeyModal').classList.add('hidden');
+            }
         }
 
-        window.analyzeContent = async function() {
+        window.clearKey = () => {
+            if(confirm("Bạn có chắc muốn xóa Key và nhập lại?")) {
+                localStorage.removeItem('gemini_api_key');
+                location.reload();
+            }
+        }
+
+        window.copyPrompt = () => {
+            navigator.clipboard.writeText(document.getElementById('imagePrompt').innerText);
+            alert("Đã sao chép prompt!");
+        }
+
+        // Hàm xử lý chính
+        window.runAnalysis = async () => {
+            // 1. Kiểm tra Key
             const apiKey = localStorage.getItem('gemini_api_key');
-            if(!apiKey) return document.getElementById('apiKeyModal').classList.remove('hidden');
+            if (!apiKey) {
+                document.getElementById('apiKeyModal').classList.remove('hidden');
+                return;
+            }
 
+            // 2. Kiểm tra Input
             const input = document.getElementById('videoInput').value;
-            if(!input) return alert("Vui lòng nhập nội dung!");
+            if (!input.trim()) {
+                alert("Vui lòng nhập ý tưởng video!");
+                return;
+            }
 
+            // 3. Hiển thị Loading
+            document.getElementById('debugLog').classList.add('hidden');
             document.getElementById('step1').classList.add('hidden');
             document.getElementById('loadingUI').classList.remove('hidden');
 
             try {
+                // 4. Khởi tạo AI
                 const genAI = new GoogleGenerativeAI(apiKey);
                 const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
+                // 5. Tạo Prompt gửi cho AI
                 const prompt = `
-                Act as a YouTube Expert. Analyze: "${input}".
-                Return JSON only:
+                You are a professional YouTube Thumbnail Strategist.
+                Analyze this video idea: "${input}"
+                
+                Output ONLY valid JSON format like this:
                 {
-                    "strategy": "Vietnamese strategy (short)",
-                    "reasoning": "Psychology explanation (Vietnamese)",
-                    "hooks": ["Hook 1", "Hook 2", "Hook 3"],
-                    "midjourney_prompt": "Highly detailed English prompt for thumbnail, 8k, cinematic lighting..."
+                    "strategy": "Vietnamese strategy text...",
+                    "reasoning": "Vietnamese psychological explanation...",
+                    "hooks": ["Short Text 1", "Short Text 2", "Short Text 3"],
+                    "midjourney_prompt": "Detailed English image prompt for Midjourney, high contrast, 8k, cinematic lighting..."
                 }
                 `;
 
+                // 6. Gửi yêu cầu (Có timeout để không bị treo mãi mãi)
                 const result = await model.generateContent(prompt);
-                const data = cleanJSON(result.response.text());
+                const responseText = result.response.text();
 
-                if(!data) throw new Error("AI không trả về đúng định dạng.");
+                // 7. Xử lý kết quả JSON (Lọc sạch các ký tự thừa)
+                let cleanJsonStr = responseText.replace(/```json|```/g, '').trim();
+                // Tìm dấu { đầu tiên và } cuối cùng để đảm bảo JSON đúng
+                const firstBrace = cleanJsonStr.indexOf('{');
+                const lastBrace = cleanJsonStr.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace !== -1) {
+                    cleanJsonStr = cleanJsonStr.substring(firstBrace, lastBrace + 1);
+                }
+                
+                const data = JSON.parse(cleanJsonStr);
 
+                // 8. Hiển thị kết quả
                 document.getElementById('loadingUI').classList.add('hidden');
                 document.getElementById('step2').classList.remove('hidden');
 
                 document.getElementById('strategyText').innerText = data.strategy;
                 document.getElementById('reasoningText').innerText = data.reasoning;
-                document.getElementById('englishPrompt').innerText = data.midjourney_prompt + " --ar 16:9 --v 6.0";
+                document.getElementById('imagePrompt').innerText = data.midjourney_prompt + " --ar 16:9 --v 6.0";
 
-                const container = document.getElementById('textOptionsContainer');
-                container.innerHTML = '';
+                const hooksDiv = document.getElementById('hooksContainer');
+                hooksDiv.innerHTML = '';
                 data.hooks.forEach(h => {
-                    const div = document.createElement('div');
-                    div.className = "p-3 bg-gray-800 rounded-lg text-white text-center text-sm font-bold border border-gray-700";
-                    div.innerText = h;
-                    container.appendChild(div);
+                    const tag = document.createElement('span');
+                    tag.className = "bg-gray-700 text-white px-3 py-1 rounded-full text-sm border border-gray-600";
+                    tag.innerText = h;
+                    hooksDiv.appendChild(tag);
                 });
 
-            } catch (e) {
-                alert("Lỗi: " + e.message);
+            } catch (error) {
+                // Nếu lỗi, quay lại màn hình nhập và báo lỗi
                 document.getElementById('loadingUI').classList.add('hidden');
                 document.getElementById('step1').classList.remove('hidden');
+                
+                let errorMsg = error.message;
+                if (errorMsg.includes('404')) errorMsg = "Model không tìm thấy (404). Hãy thử đổi Key mới.";
+                if (errorMsg.includes('400')) errorMsg = "Key không hợp lệ hoặc lỗi cú pháp.";
+                if (errorMsg.includes('Failed to fetch')) errorMsg = "Lỗi mạng. Kiểm tra internet.";
+                
+                logError(errorMsg);
             }
         }
 
-        if(!localStorage.getItem('gemini_api_key')) document.getElementById('apiKeyModal').classList.remove('hidden');
+        // Kiểm tra Key khi tải trang
+        if (!localStorage.getItem('gemini_api_key')) {
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
