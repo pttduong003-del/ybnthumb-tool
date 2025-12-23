@@ -1,377 +1,1150 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YBNThumb AI - Ultimate Studio</title>
+    <title>YBNThumb AI </title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkbg: '#0f0f0f', 
-                        darkcard: '#1e1e1e', 
-                        accent: '#ff0000',
-                        highlight: '#3b82f6'
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body { background-color: #0f0f0f; color: #e5e5e5; font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1e1e1e; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-        
-        /* Layout Grid Selection Effect */
-        .layout-btn.selected { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
-        
-        /* Spinner */
-        .loader {
-            width: 48px; height: 48px;
-            border: 5px solid #FFF;
-            border-bottom-color: #FF3D00;
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f0f; /* Màu nền siêu tối */
         }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Custom scrollbar cho đẹp hơn */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #1a1a1a; 
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
     </style>
 </head>
-<body class="min-h-screen custom-scrollbar pb-20">
+<body class="text-white h-screen flex flex-col justify-between">
 
-    <div id="apiKeyModal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center hidden">
-        <div class="bg-darkcard p-8 rounded-2xl border border-gray-800 w-full max-w-md shadow-2xl transform transition-all scale-100">
-            <h2 class="text-2xl font-bold text-white mb-2 text-center">🔐 Xác thực</h2>
-            <p class="text-gray-400 text-sm mb-6 text-center">Nhập API Key Gemini của bạn để mở khóa công cụ.</p>
-            
-            <div class="relative mb-4">
-                <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-black border border-gray-700 rounded-xl p-4 text-white focus:border-blue-500 outline-none transition-colors">
+    <header class="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center shadow-lg shadow-red-500/20">
+                <i class="fa-solid fa-play text-white ml-1"></i>
             </div>
-            
-            <button onclick="saveApiKey()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3 rounded-xl transition shadow-lg">
-                Kết nối ngay
+            <div>
+                <h1 class="text-xl font-bold leading-tight">YBNThumb AI</h1>
+                <p class="text-xs text-gray-400">Tạo hình thu nhỏ nhanh chóng YouTube Tỷ Lệ Click Cao</p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <button class="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 px-4 py-2 rounded-full text-sm font-semibold transition">
+                <i class="fa-solid fa-key"></i> Tài khoản giá rẻ
             </button>
-            <div class="mt-4 text-center">
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-gray-500 hover:text-white underline">Chưa có Key? Lấy tại đây</a>
+            
+            <button class="flex items-center gap-2 border border-gray-600 hover:bg-gray-800 px-4 py-2 rounded-full text-sm font-medium transition">
+                <i class="fa-solid fa-play text-red-500"></i> Hướng dẫn
+            </button>
+
+            <button class="flex items-center gap-2 border border-green-600 text-green-500 hover:bg-green-900/20 px-4 py-2 rounded-full text-sm font-medium transition">
+                <i class="fa-solid fa-key"></i> Bộ khóa API
+            </button>
+
+             <button class="flex items-center gap-2 bg-pink-700 hover:bg-pink-600 px-4 py-2 rounded-full text-sm font-semibold transition">
+                <i class="fa-solid fa-heart"></i> Quyên tặng
+            </button>
+
+            <button class="flex items-center gap-2 border border-gray-600 hover:bg-gray-800 px-3 py-2 rounded-full text-sm font-medium transition">
+                <i class="fa-solid fa-globe"></i> VI
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center px-4">
+        <div class="w-full max-w-4xl">
+            
+            <div class="bg-[#1a1a1a] border border-gray-800 rounded-2xl p-6 shadow-2xl">
+                
+                <div class="mb-4">
+                    <label class="text-sm font-semibold text-gray-300">
+                        Nội dung video / Ý tưởng kịch bản <span class="text-red-500">*</span>
+                    </label>
+                </div>
+
+                <textarea 
+                    class="w-full bg-[#262626] text-gray-200 rounded-xl p-4 text-sm border border-transparent focus:border-blue-500 focus:outline-none transition resize-none placeholder-gray-500"
+                    rows="5"
+                    placeholder="Ví dụ: Review iPhone 16 mới nhất, cảnh quay điện..."
+                ></textarea>
+
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+                    <button class="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#2a2a2a] hover:bg-[#333] border border-gray-700 text-gray-300 px-5 py-3 rounded-lg text-sm transition">
+                        <i class="fa-solid fa-upload"></i> Tải ảnh nền (Tùy chọn)
+                    </button>
+
+                    <button class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3 rounded-full text-sm shadow-lg shadow-blue-600/30 transition transform hover:scale-105">
+                        Phân tích & Gợi ý Văn bản
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-6 text-center">
+        <p class="text-gray-500 text-sm">
+            Được hỗ trợ bởi Google Gemini v2.5 (Flash)
+        </p>
+    </footer>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt khóa API</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Thiết lập cơ bản */
+        :root {
+            --bg-color: #000000; /* Nền tối phía sau */
+            --modal-bg: #1e1e1e; /* Nền của hộp thoại */
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --primary-color: #d97706; /* Màu vàng cam của nút Lưu */
+            --primary-hover: #b45309;
+            --border-color: #333333;
+            --input-bg: #2d2d2d;
+            --instruction-bg: #121212;
+            --link-color: #3b82f6;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        /* Lớp phủ mờ (Overlay) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(2px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* Hộp thoại chính */
+        .modal-container {
+            background-color: var(--modal-bg);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            padding: 24px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Header: Icon + Tiêu đề + Nút đóng */
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .header-title i {
+            color: var(--primary-color);
+            margin-right: 10px;
+            font-size: 16px;
+            border: 1px solid var(--primary-color);
+            padding: 4px; /* Giả lập icon key rỗng */
+            border-radius: 50%; /* Nếu muốn tròn */
+            /* Để giống hệt hình, dùng icon solid key và style lại chút */
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+        
+        /* Icon chìa khóa kiểu outline vàng */
+        .key-icon {
+            color: #fbbf24;
+            transform: rotate(45deg);
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        /* Phần mô tả */
+        .modal-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        /* Ô nhập liệu */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .api-input {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            letter-spacing: 2px; /* Khoảng cách dấu chấm mật khẩu */
+        }
+
+        .api-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Khu vực nút bấm */
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #b47d06; /* Màu vàng đậm hơn chút cho giống hình */
+            background-image: linear-gradient(to bottom, #ca8a04, #a16207);
+            color: white;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background-color: var(--input-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #333;
+            color: white;
+        }
+
+        /* Hộp hướng dẫn */
+        .instructions-box {
+            background-color: var(--instruction-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 13px;
+        }
+
+        .instructions-header {
+            color: #60a5fa; /* Màu xanh nhạt tiêu đề hướng dẫn */
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .instructions-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .instructions-list li {
+            margin-bottom: 4px;
+        }
+
+        .instructions-list a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+        
+        .instructions-list a:hover {
+            text-decoration: underline;
+        }
+
+        /* Highlight text trong hướng dẫn */
+        .highlight {
+            color: white;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="header-title">
+                    <i class="fa-solid fa-key key-icon"></i>
+                    Cài đặt khóa API
+                </div>
+                <button class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-desc">
+                Để sử dụng ứng dụng miễn phí và riêng tư, bạn cần nhập API Key của riêng mình. Key đã được lưu toàn bộ trên trình duyệt của bạn.
+            </div>
+
+            <div class="input-group">
+                <input type="password" class="api-input" value="fakeapikey123456" placeholder="Nhập API Key...">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-primary">Lưu Key</button>
+                <button class="btn btn-secondary">Khóa</button>
+            </div>
+
+            <div class="instructions-box">
+                <div class="instructions-header">HƯỚNG DẪN LẤY KEY (1 PHÚT):</div>
+                <ol class="instructions-list">
+                    <li>1. Truy cập: <a href="https://aistudio.google.com" target="_blank">Google AI Studio (aistudio.google.com)</a></li>
+                    <li>2. Đăng nhập tài khoản Google của bạn.</li>
+                    <li>3. Nhấn nút màu xanh <span class="highlight">"Tạo khóa API"</span>.</li>
+                    <li>4. Chọn "Tạo khóa API trong dự án mới".</li>
+                    <li>5. Copy chuỗi ký tự (bắt đầu bằng AIza...) và dán vào ô trên.</li>
+                </ol>
             </div>
         </div>
     </div>
 
-    <header class="border-b border-gray-800 bg-darkcard/80 backdrop-blur-md sticky top-0 z-40">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-900 rounded-lg flex items-center justify-center shadow-lg text-white font-bold text-xl">▶</div>
-                <div>
-                    <h1 class="text-lg font-bold text-white tracking-tight">YBNThumb <span class="text-blue-500">Ultimate</span></h1>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">High CTR Generator</p>
-                </div>
-            </div>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YBNThumb AI - Tạo Thumbnail YouTube</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-card: #141414;
+            --border-color: #2a2a2a;
+            --text-main: #ffffff;
+            --text-muted: #a3a3a3;
+            --accent-yellow: #fbbf24;
+            --accent-blue: #3b82f6;
+            --accent-pink: #ec4899;
+            --btn-primary: #0056b3; /* Màu xanh nút Tạo Prompt */
+        }
 
-            <div class="flex items-center gap-2 bg-black/30 p-1 rounded-lg border border-gray-800">
-                <span class="text-[10px] text-gray-500 pl-2">AI Model:</span>
-                <select id="modelSelect" class="bg-transparent text-xs text-white outline-none border-none p-1 cursor-pointer font-mono">
-                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (Nhanh)</option>
-                    <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash (Latest)</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Thông minh)</option>
-                    <option value="gemini-pro">Gemini 1.0 Pro (Ổn định nhất)</option>
-                </select>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Khoảng cách giữa các khối không liền mạch */
+        }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .logo-text p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-main);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(90deg, #3b82f6, #ec4899);
+            border: none;
+            font-weight: 600;
+        }
+
+        /* --- Common Card Style --- */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        /* --- Section 1: Analysis (Top Row) --- */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .analysis-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .text-blue { color: #60a5fa; }
+        .text-pink { color: #f472b6; }
+
+        .analysis-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #d1d5db;
+        }
+
+        /* --- Section 2: Selection & Preview (Middle Row) --- */
+        .middle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* List options */
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .option-item {
+            background-color: #262626;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .option-item:hover {
+            border-color: var(--text-muted);
+        }
+
+        .option-item.active {
+            border-color: var(--accent-blue); /* Ví dụ item đầu tiên active */
+        }
+
+        .option-text {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .option-percent {
+            color: #4ade80; /* Màu xanh lá cho % */
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .input-box {
+            background-color: #262626;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .input-box input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+        }
+
+        /* Preview Box */
+        .preview-container {
+            background-color: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            height: 300px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* Grid lines giả lập */
+            background-image: 
+                linear-gradient(#333 1px, transparent 1px),
+                linear-gradient(90deg, #333 1px, transparent 1px);
+            background-size: 33.33% 33.33%;
+        }
+
+        .preview-text-block {
+            background-color: var(--accent-yellow);
+            color: #000;
+            padding: 10px 20px;
+            font-weight: 800;
+            font-size: 18px;
+            position: absolute;
+            top: 30%;
+            text-transform: uppercase;
+        }
+
+        .preview-person {
+            position: absolute;
+            bottom: 0;
+            color: #555;
+            font-size: 120px;
+        }
+
+        /* --- Section 3: Layout Templates (Image 4 start) --- */
+        .layout-header {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .layout-options {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .layout-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 100px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            gap: 5px;
+            transition: background 0.2s;
+        }
+
+        .layout-btn:hover {
+            background-color: #262626;
+        }
+
+        /* CSS vẽ mô phỏng icon bố cục */
+        .layout-icon-draw {
+            width: 40px;
+            height: 20px;
+            position: relative;
+        }
+        /* Ví dụ style chung cho icon */
+        .layout-icon-draw::before, .layout-icon-draw::after {
+            content: '';
+            position: absolute;
+            background-color: #555;
+        }
+        /* Cổ điển: Tròn trái, dài phải */
+        .icon-classic::before { width: 12px; height: 12px; border-radius: 50%; left: 0; top: 4px; background: #ddd;}
+        .icon-classic::after { width: 22px; height: 6px; right: 0; top: 7px; background: var(--accent-yellow);}
+
+        /* Đảo ngược */
+        .icon-reverse::before { width: 22px; height: 6px; left: 0; top: 7px; background: var(--accent-yellow); }
+        .icon-reverse::after { width: 12px; height: 12px; border-radius: 50%; right: 0; top: 4px; background: #ddd;}
+
+        .layout-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* --- Section 4: Controls (Filter Inputs) --- */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted); /* Màu tiêu đề cam/hồng như hình */
+            margin-bottom: 8px;
+        }
+        .control-group:nth-child(1) label { color: #f87171; } /* Cam đỏ */
+        .control-group:nth-child(2) label { color: #fbbf24; } /* Vàng */
+        .control-group:nth-child(3) label { color: #4ade80; } /* Xanh lá */
+        .control-group:nth-child(4) label { color: #a78bfa; } /* Tím */
+
+        .select-wrapper {
+            position: relative;
+        }
+        
+        select {
+            width: 100%;
+            background-color: #262626;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .upload-btn {
+            width: 100%;
+            margin-top: 10px;
+            background: #333;
+            border: 1px dashed #666;
+            color: #aaa;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .upload-btn:hover { border-color: #888; color: #fff; }
+
+        /* --- Section 5: Prompt & Footer --- */
+        .prompt-box {
+            width: 100%;
+            background-color: #262626;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            color: white;
+            min-height: 50px;
+            resize: none;
+            font-family: inherit;
+        }
+
+        .footer-actions {
+            display: flex;
+            justify-content: flex-end; /* Đẩy nút sang phải */
+            align-items: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .link-action {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .link-action:hover { color: white; }
+
+        .btn-create {
+            background-color: #0ea5e9; /* Xanh dương đậm */
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-create:hover { opacity: 0.9; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fa-brands fa-youtube"></i></div>
+            <div class="logo-text">
+                <h1>YBNThumb AI</h1>
+                <p>Tạo hình thu nhỏ nhanh chóng YouTube Tỷ Lệ Click Cao</p>
             </div>
-            
-            <button onclick="clearKey()" class="text-xs text-gray-500 hover:text-red-400 ml-4">Đổi Key</button>
+        </div>
+        <div class="top-actions">
+            <button class="btn-sm btn-gradient"><i class="fa-solid fa-gem"></i> Tài khoản giá rẻ</button>
+            <button class="btn-sm"><i class="fa-regular fa-circle-play"></i> Hướng dẫn</button>
+            <button class="btn-sm"><i class="fa-solid fa-key"></i> Bộ khóa API</button>
+            <button class="btn-sm"><i class="fa-solid fa-heart"></i> Quyên tặng</button>
+            <button class="btn-sm"><i class="fa-solid fa-globe"></i> VI</button>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-8">
+    <section class="analysis-grid">
+        <div class="card">
+            <div class="analysis-title text-blue">PHÂN TÍCH CHIẾN LƯỢC</div>
+            <div class="analysis-content">
+                Vì không cung cấp hình ảnh nên ý tưởng hình ảnh sẽ tập trung vào công việc tạo ra một hình thu nhỏ sạch sẽ, hiện đại, làm văn bản bật nổi. Sử dụng phông chữ đậm, dễ đọc với màu sắc tương phản cao (ví dụ: chữ trắng/vàng trên nền đen/xám đậm hoặc ngược lại). Có thể thêm logo Apple hoặc biểu tượng liên quan đến iPhone 16...
+            </div>
+        </div>
+        <div class="card">
+            <div class="analysis-title text-pink">LÝ LUẬN</div>
+            <div class="analysis-content">
+                Chủ đề 'iPhone 16' là một chủ đề công nghệ được nhiều người quan tâm, đặc biệt là những người yêu thích Apple và các sản phẩm mới. Các từ khóa như 'LỘ DIỆN', 'ĐỪNG MUA', 'ĐÁNG TIỀN' kích thích tò mò, tạo ra cảm giác Tranh luận hoặc cung cấp thông tin giá trị...
+            </div>
+        </div>
+    </section>
 
-        <div id="errorBox" class="hidden mb-6 p-4 bg-red-900/20 border border-red-500/50 rounded-xl flex items-start gap-3 animate-pulse-slow">
-            <span class="text-2xl">⚠️</span>
-            <div>
-                <h3 class="font-bold text-red-400 text-sm">Lỗi kết nối AI</h3>
-                <p id="errorText" class="text-xs text-red-200 mt-1 font-mono"></p>
-                <p class="text-xs text-gray-400 mt-2">👉 Hãy thử chọn <b>Model khác</b> ở menu trên cùng và bấm lại nút Phân tích.</p>
+    <section class="middle-grid">
+        <div class="card">
+            <div class="option-header">
+                <h3>Chọn Văn bản số Ít nhất</h3>
+                <i class="fa-solid fa-rotate-right" style="cursor: pointer;"></i>
+            </div>
+            <p style="font-size: 12px; color: #888; margin-top: -10px;">AI đã tính toán tỷ lệ nhấp chuột (CTR) cho các lựa chọn này:</p>
+
+            <div class="option-item active">
+                <span class="option-text">" IPHONE 16: LỘ DIỆN! "</span>
+                <span class="option-percent">90 %</span>
+            </div>
+            <div class="option-item">
+                <span class="option-text">" ĐỪNG MUA IPHONE 16! "</span>
+                <span class="option-percent">85 %</span>
+            </div>
+            <div class="option-item">
+                <span class="option-text">" IPHONE 16: ĐÁNG TIỀN? "</span>
+                <span class="option-percent">80 %</span>
+            </div>
+            <div class="option-item">
+                <span class="option-text">" TẤT VỀ IPHONE 16 "</span>
+                <span class="option-percent">75 %</span>
+            </div>
+             <div class="option-item">
+                <span class="option-text">" IPHONE 16: CÚ SỐC MỚI? "</span>
+                <span class="option-percent">70 %</span>
+            </div>
+
+            <div class="input-box">
+                <label style="display:block; font-size: 12px; color: #aaa; margin-bottom: 5px;">TỰ ĐỘNG NỘI DUNG VĂN BẢN</label>
+                <input type="text" placeholder="Nhập văn bản bạn muốn hiển thị...">
             </div>
         </div>
 
-        <section id="step1" class="animate-fade-in">
-            <div class="bg-darkcard border border-gray-800 rounded-2xl p-1 shadow-2xl">
-                <div class="bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] rounded-xl p-8">
-                    <label class="block text-sm font-semibold text-blue-400 mb-3 tracking-wide">NỘI DUNG VIDEO / Ý TƯỞNG KỊCH BẢN</label>
-                    <textarea id="videoInput" rows="5" class="w-full bg-[#050505] border border-gray-800 rounded-xl p-5 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition resize-none text-lg placeholder-gray-700 leading-relaxed" placeholder="Ví dụ: Bí ẩn Tam giác Bermuda, phong cách phim tài liệu, kinh dị, u ám..."></textarea>
-                    
-                    <div class="flex flex-col md:flex-row justify-between items-center mt-6 gap-4">
-                        <label class="flex items-center gap-3 px-4 py-2 bg-gray-900 rounded-lg cursor-pointer hover:bg-gray-800 border border-gray-800 transition group w-full md:w-auto">
-                            <svg class="w-5 h-5 text-gray-500 group-hover:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span id="imageLabel" class="text-sm text-gray-400 group-hover:text-white">Tải ảnh nền (Tùy chọn)</span>
-                            <input type="file" id="imageInput" class="hidden" accept="image/*" onchange="handleImage(this)">
-                        </label>
-
-                        <button onclick="analyzeContent()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold px-10 py-3 rounded-xl shadow-lg shadow-blue-900/30 transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
-                            <span>Phân tích & Gợi ý Văn bản</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                        </button>
-                    </div>
+        <div class="card">
+            <div class="option-header">
+                <div><i class="fa-solid fa-display"></i> Bố cục & Hiển thị</div>
+                <div style="background:#333; padding: 4px; border-radius: 4px;">
+                    <i class="fa-solid fa-desktop" style="color:#3b82f6; margin-right: 5px;"></i>
+                    <i class="fa-solid fa-mobile-screen" style="color:#666;"></i>
                 </div>
             </div>
-        </section>
+            <p style="font-size: 12px; color: #888; margin-top: -10px; margin-bottom: 20px;">Kéo dài hoặc chọn bố cục mẫu.</p>
 
-        <div id="loadingUI" class="hidden flex flex-col items-center justify-center py-20">
-            <div class="loader mb-6"></div>
-            <p class="text-gray-400 font-medium animate-pulse tracking-widest uppercase text-sm">Đang phân tích dữ liệu...</p>
+            <div class="preview-container">
+                <div class="preview-text-block">NHẬP VĂN BẢN...</div>
+                <div class="preview-person"><i class="fa-solid fa-user"></i></div>
+            </div>
         </div>
+    </section>
 
-        <section id="step2" class="hidden space-y-8">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-darkcard border border-gray-800 p-6 rounded-2xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition text-6xl">🎯</div>
-                    <h3 class="text-blue-500 font-bold text-xs uppercase mb-3 tracking-widest">Chiến lược hình ảnh</h3>
-                    <p id="strategyText" class="text-gray-300 text-sm leading-relaxed"></p>
+    <section class="card">
+        <div class="layout-header">
+            <i class="fa-solid fa-table-cells-large"></i> Mẫu bố cục sẵn (Click để chọn)
+        </div>
+        <div class="layout-options">
+            <div class="layout-btn">
+                <div class="layout-icon-draw icon-classic"></div>
+                <div class="layout-label">CỔ ĐIỂN</div>
+            </div>
+            <div class="layout-btn">
+                <div class="layout-icon-draw icon-reverse"></div>
+                <div class="layout-label">ĐẢO NGƯỢC</div>
+            </div>
+            <div class="layout-btn">
+                <div class="layout-icon-draw" style="display: flex; justify-content:center;">
+                    <div style="width: 14px; height: 14px; background: #ddd; border-radius: 50%; border-bottom: 3px solid #fbbf24;"></div>
                 </div>
-                <div class="bg-darkcard border border-gray-800 p-6 rounded-2xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition text-6xl">🧠</div>
-                    <h3 class="text-purple-500 font-bold text-xs uppercase mb-3 tracking-widest">Đánh vào tâm lý</h3>
-                    <p id="reasoningText" class="text-gray-400 text-sm italic leading-relaxed"></p>
+                <div class="layout-label">VLOG</div>
+            </div>
+             <div class="layout-btn">
+                <div class="layout-icon-draw" style="display: flex; justify-content:space-between; align-items: center;">
+                    <div style="width: 15px; height: 5px; background: #fbbf24;"></div>
+                    <div style="width: 10px; height: 10px; background: #ddd; border-radius: 50%;"></div>
+                </div>
+                <div class="layout-label">ĐỐI ĐẦU</div>
+            </div>
+             <div class="layout-btn">
+                <div class="layout-icon-draw" style="display: flex; justify-content:space-between; align-items: center;">
+                    <div style="width: 10px; height: 10px; background: #ddd; border-radius: 50%;"></div>
+                    <div style="width: 15px; height: 5px; background: #fbbf24;"></div>
+                </div>
+                <div class="layout-label">TÁCH RA</div>
+            </div>
+            <div class="layout-btn">
+                 <div class="layout-icon-draw" style="text-align:center;"><i class="fa-solid fa-film" style="color:#aaa; font-size:12px;"></i></div>
+                <div class="layout-label">ĐIỆN ẢNH</div>
+            </div>
+            <div class="layout-btn">
+                 <div class="layout-icon-draw" style="text-align:center;"><div style="width:20px; height:20px; background:#ddd; border-radius:50%; margin:0 auto; display:flex; align-items:center; justify-content:center;"><div style="width:24px; height:6px; background:#333;"></div></div></div>
+                <div class="layout-label">CHỮ LỚN</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="controls-grid">
+            <div class="control-group">
+                <label><i class="fa-regular fa-user"></i> Chủ thể chính</label>
+                <div class="select-wrapper">
+                    <select>
+                        <option>Tự</option>
+                        <option>Nam</option>
+                        <option>Nữ</option>
+                    </select>
+                </div>
+                <button class="upload-btn"><i class="fa-solid fa-camera"></i> Tải ảnh mặt</button>
+            </div>
+
+            <div class="control-group">
+                <label style="color: #fbbf24;"><i class="fa-solid fa-font"></i> Hiệu ứng / Kiểu văn bản</label>
+                <div class="select-wrapper">
+                    <select>
+                        <option>Tự động ( )</option>
+                        <option selected>3D Khối Nổi (Bắt mắt nhất)</option>
+                        <option>Neon Phát Sáng (Nổi bật)</option>
+                        <option>Trẩu (Nhãn dán)</option>
+                        <option>Vàng Kim Loại (Sang trọng)</option>
+                        <option>Rách / Bẩn (Kinh dị/Game)</option>
+                        <option>Truyện Tranh (Nghệ thuật Pop Art)</option>
+                        <option>Nhiễu Kỹ Thuật Số (Mạng)</option>
+                        <option>Tối giản (Hiện đại)</option>
+                    </select>
+                </div>
+                <p style="font-size: 10px; color: #666; margin-top: 5px;">* Hiệu ứng văn bản giúp tăng tỷ lệ nhấp chuột (CTR).</p>
+            </div>
+
+            <div class="control-group">
+                <label style="color: #4ade80;"><i class="fa-regular fa-face-smile"></i> Cảm giác & Không khí</label>
+                <div class="select-wrapper">
+                    <select>
+                        <option selected>Auto (Theo chủ đề)</option>
+                        <option>Sốc / Ngạc</option>
+                        <option>Tức giận / Gay</option>
+                        <option>Phòng / Kinh dị</option>
+                        <option>Vui vẻ / Hạnh</option>
+                        <option>Buồn / Thất</option>
+                        <option>Nghiêm / Ngầu</option>
+                        <option>Suy nghĩ / Phân vân</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="bg-darkcard border border-gray-800 p-6 rounded-2xl">
-                <h3 class="text-white font-bold mb-4 flex items-center gap-2">
-                    <span class="text-yellow-500">✍️</span> Chọn Text trên ảnh (Hooks)
-                </h3>
-                <div id="hooksContainer" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
-                <input type="text" id="customHook" placeholder="Hoặc nhập text tùy chỉnh của bạn..." class="mt-4 w-full bg-[#0a0a0a] border border-gray-800 rounded-lg p-3 text-sm text-white focus:border-blue-500 transition">
-            </div>
-
-            <div class="bg-darkcard border border-gray-800 p-6 rounded-2xl">
-                <h3 class="text-white font-bold mb-4 text-sm uppercase text-gray-400">Chọn Bố cục (Layout)</h3>
-                <div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
-                    <button onclick="selectLayout('Classic', this)" class="layout-btn selected min-w-[100px] p-2 border border-gray-700 rounded-lg hover:border-blue-500 bg-black flex flex-col items-center gap-2 transition">
-                        <div class="w-full h-12 bg-gray-800 rounded relative"><div class="absolute right-1 top-2 w-1/2 h-2 bg-yellow-500"></div><div class="absolute left-2 bottom-0 w-8 h-8 bg-gray-600 rounded-t-full"></div></div>
-                        <span class="text-[10px] text-gray-400">Cổ điển</span>
-                    </button>
-                    <button onclick="selectLayout('Face Close-up', this)" class="layout-btn min-w-[100px] p-2 border border-gray-700 rounded-lg hover:border-blue-500 bg-black flex flex-col items-center gap-2 transition">
-                        <div class="w-full h-12 bg-gray-800 rounded relative flex justify-center items-end"><div class="w-10 h-10 bg-gray-600 rounded-t-full"></div></div>
-                        <span class="text-[10px] text-gray-400">Cận mặt</span>
-                    </button>
-                    <button onclick="selectLayout('Split Screen', this)" class="layout-btn min-w-[100px] p-2 border border-gray-700 rounded-lg hover:border-blue-500 bg-black flex flex-col items-center gap-2 transition">
-                        <div class="w-full h-12 bg-gray-800 rounded relative flex"><div class="w-1/2 border-r border-black"></div></div>
-                        <span class="text-[10px] text-gray-400">Chia đôi</span>
-                    </button>
-                    <button onclick="selectLayout('Object Focus', this)" class="layout-btn min-w-[100px] p-2 border border-gray-700 rounded-lg hover:border-blue-500 bg-black flex flex-col items-center gap-2 transition">
-                        <div class="w-full h-12 bg-gray-800 rounded relative flex items-center justify-center"><div class="w-6 h-6 bg-red-500 rounded"></div></div>
-                        <span class="text-[10px] text-gray-400">Sản phẩm</span>
-                    </button>
+            <div class="control-group">
+                <label style="color: #a78bfa;"><i class="fa-solid fa-palette"></i> Phong cách hình ảnh</label>
+                <div class="select-wrapper">
+                    <select>
+                        <option selected>Siêu Thật (8k)</option>
+                        <option>Hình ảnh 3D (Pixar)</option>
+                        <option>Phim hoạt hình / Anime</option>
+                        <option>Minh họa</option>
+                        <option>Phong cách Cyberpunk / Neon</option>
+                        <option>Kinh dị / Dark</option>
+                    </select>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-darkcard border border-gray-800 rounded-xl p-3">
-                    <label class="text-[10px] text-gray-500 block mb-1">Chủ thể</label>
-                    <select id="subjectSelect" class="w-full bg-transparent text-white text-sm outline-none border-none"><option>Tự (Self)</option><option>Nam</option><option>Nữ</option><option>Sản phẩm</option><option>Không người</option></select>
-                </div>
-                <div class="bg-darkcard border border-gray-800 rounded-xl p-3">
-                    <label class="text-[10px] text-gray-500 block mb-1">Cảm xúc</label>
-                    <select id="emotionSelect" class="w-full bg-transparent text-white text-sm outline-none border-none"><option>Sốc / Ngạc nhiên</option><option>Tức giận</option><option>Vui vẻ</option><option>Sợ hãi</option><option>Nghiêm túc</option></select>
-                </div>
-                <div class="bg-darkcard border border-gray-800 rounded-xl p-3">
-                    <label class="text-[10px] text-gray-500 block mb-1">Style Text</label>
-                    <select id="textStyleSelect" class="w-full bg-transparent text-white text-sm outline-none border-none"><option>3D Khối Nổi</option><option>Neon</option><option>Đơn giản</option><option>Kinh dị</option></select>
-                </div>
-                <div class="bg-darkcard border border-gray-800 rounded-xl p-3">
-                    <label class="text-[10px] text-gray-500 block mb-1">Đồ họa</label>
-                    <select id="artStyleSelect" class="w-full bg-transparent text-white text-sm outline-none border-none"><option>Siêu thực (8k)</option><option>3D Pixar</option><option>Anime</option><option>Cinematic</option></select>
-                </div>
-            </div>
+    <section class="card" style="padding-bottom: 10px;">
+        <div class="control-group">
+            <label style="color: #aaa; margin-bottom: 10px; font-weight: 500;">
+                <i class="fa-solid fa-pen"></i> Lời nhắc / Ghi thêm
+            </label>
+            <textarea class="prompt-box" placeholder="VD: Không dùng màu tối, thêm hiệu ứng cháy nổ..."></textarea>
+        </div>
+    </section>
 
-            <input type="text" id="extraNote" placeholder="Ghi chú thêm (VD: Nền màu xanh, trời mưa...)" class="w-full bg-darkcard border border-gray-800 rounded-xl p-4 text-sm text-gray-300 focus:border-blue-500 transition">
+    <div class="footer-actions">
+        <a href="#" class="link-action"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+        <a href="#" class="link-action">Làm lại từ đầu</a>
+        <button class="btn-create">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Prompt Chi
+        </button>
+    </div>
 
-            <div class="flex justify-end gap-4 pt-6 border-t border-gray-800">
-                <button onclick="resetApp()" class="px-6 py-3 text-sm text-gray-500 hover:text-white">Làm lại</button>
-                <button onclick="generateFinalPrompt()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition flex items-center gap-2">
-                    ✨ Tạo Prompt Chi Tiết
-                </button>
-            </div>
-        </section>
+</div>
 
-        <section id="step3" class="hidden space-y-6">
-            <div class="bg-darkcard border border-gray-700 rounded-2xl overflow-hidden shadow-2xl">
-                <div class="bg-gray-800/50 p-4 border-b border-gray-700 flex justify-between items-center">
-                    <h3 class="font-bold text-blue-400 text-sm uppercase">Prompt Midjourney / DALL-E</h3>
-                    <button onclick="copyText('finalPrompt')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded transition">Sao chép</button>
-                </div>
-                <div class="p-6 bg-[#050505] relative group">
-                    <p id="finalPrompt" class="text-gray-300 font-mono text-sm leading-7 select-all"></p>
-                </div>
-            </div>
-
-            <div class="bg-darkcard border border-gray-800 rounded-2xl p-6">
-                <h3 class="font-bold text-gray-500 text-xs uppercase mb-3">Mô tả chi tiết (Tiếng Việt)</h3>
-                <p id="vnDescription" class="text-gray-300 text-sm leading-relaxed"></p>
-            </div>
-
-            <button onclick="document.getElementById('step3').classList.add('hidden'); document.getElementById('step2').classList.remove('hidden');" class="w-full text-center text-gray-500 text-sm hover:text-white py-4">⬅ Quay lại chỉnh sửa</button>
-        </section>
-
-    </main>
-
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
-
-        // Global State
-        let selectedLayoutName = "Classic";
-        let analysisData = null;
-
-        // --- UTILS ---
-        window.saveApiKey = () => {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if(key.startsWith('AIza')) { localStorage.setItem('gemini_api_key', key); document.getElementById('apiKeyModal').classList.add('hidden'); }
-            else { alert("Key không hợp lệ (Phải bắt đầu bằng AIza)"); }
-        }
-        window.clearKey = () => { if(confirm("Xóa Key?")) { localStorage.removeItem('gemini_api_key'); location.reload(); } }
-        window.handleImage = (input) => { if(input.files[0]) { document.getElementById('imageLabel').innerText = "✅ " + input.files[0].name; document.getElementById('imageLabel').classList.add('text-green-400'); } }
-        window.selectLayout = (name, btn) => {
-            selectedLayoutName = name;
-            document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-        }
-        window.copyText = (id) => { navigator.clipboard.writeText(document.getElementById(id).innerText); alert("Đã sao chép!"); }
-        window.resetApp = () => { document.getElementById('step2').classList.add('hidden'); document.getElementById('step3').classList.add('hidden'); document.getElementById('step1').classList.remove('hidden'); window.scrollTo(0,0); }
-        window.selectHook = (text) => { document.getElementById('customHook').value = text; }
-
-        // --- CORE LOGIC ---
-        // Hàm gọi AI chung để xử lý lỗi 404
-        async function callGemini(promptText) {
-            const apiKey = localStorage.getItem('gemini_api_key');
-            if(!apiKey) { document.getElementById('apiKeyModal').classList.remove('hidden'); throw new Error("No Key"); }
-
-            // Lấy model từ menu chọn
-            const modelName = document.getElementById('modelSelect').value;
-            console.log("Calling Model:", modelName);
-
-            const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: modelName });
-
-            try {
-                const result = await model.generateContent(promptText);
-                const text = result.response.text();
-                // Lọc JSON
-                let cleanJson = text.replace(/```json|```/g, '').trim();
-                const start = cleanJson.indexOf('{');
-                const end = cleanJson.lastIndexOf('}');
-                if(start !== -1 && end !== -1) cleanJson = cleanJson.substring(start, end+1);
-                return JSON.parse(cleanJson);
-            } catch (error) {
-                console.error("AI Error:", error);
-                throw error; // Ném lỗi ra ngoài để hàm main xử lý
-            }
-        }
-
-        // --- PHASE 1: ANALYZE ---
-        window.analyzeContent = async () => {
-            const input = document.getElementById('videoInput').value;
-            if(!input) return alert("Vui lòng nhập nội dung!");
-
-            document.getElementById('step1').classList.add('hidden');
-            document.getElementById('loadingUI').classList.remove('hidden');
-            document.getElementById('errorBox').classList.add('hidden');
-
-            try {
-                const prompt = `
-                Role: YouTube Expert. Task: Analyze video idea: "${input}".
-                Return JSON only:
-                {
-                    "strategy": "Vietnamese strategy (short)",
-                    "reasoning": "Psychology (Vietnamese)",
-                    "hooks": ["Hook 1", "Hook 2", "Hook 3"]
-                }`;
-                
-                const data = await callGemini(prompt);
-                
-                // Render Step 2
-                document.getElementById('loadingUI').classList.add('hidden');
-                document.getElementById('step2').classList.remove('hidden');
-                
-                document.getElementById('strategyText').innerText = data.strategy;
-                document.getElementById('reasoningText').innerText = data.reasoning;
-                
-                const container = document.getElementById('hooksContainer');
-                container.innerHTML = '';
-                data.hooks.forEach(h => {
-                    const btn = document.createElement('div');
-                    btn.className = "p-3 bg-gray-900 border border-gray-800 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-gray-800 transition text-sm text-center";
-                    btn.innerText = `"${h}"`;
-                    btn.onclick = () => window.selectHook(h);
-                    container.appendChild(btn);
-                });
-
-            } catch (e) {
-                document.getElementById('loadingUI').classList.add('hidden');
-                document.getElementById('step1').classList.remove('hidden');
-                document.getElementById('errorBox').classList.remove('hidden');
-                
-                let msg = e.message;
-                if(msg.includes('404')) msg = `Model không tìm thấy (404). Hãy đổi Model khác ở menu trên cùng.`;
-                else if(msg.includes('400')) msg = `API Key không hợp lệ.`;
-                document.getElementById('errorText').innerText = msg;
-            }
+</body>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả Prompt - YBNThumb AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
         }
 
-        // --- PHASE 2: GENERATE PROMPT ---
-        window.generateFinalPrompt = async () => {
-            const input = document.getElementById('videoInput').value;
-            const hook = document.getElementById('customHook').value || "TEXT HERE";
-            const subject = document.getElementById('subjectSelect').value;
-            const emotion = document.getElementById('emotionSelect').value;
-            const style = document.getElementById('textStyleSelect').value;
-            const art = document.getElementById('artStyleSelect').value;
-            const note = document.getElementById('extraNote').value;
-
-            document.getElementById('step2').classList.add('hidden');
-            document.getElementById('loadingUI').classList.remove('hidden');
-
-            try {
-                const prompt = `
-                Create Midjourney Prompt.
-                Context: Video="${input}", Layout="${selectedLayoutName}".
-                Elements: Subject=${subject}, Emotion=${emotion}, Text="${hook}" (Style: ${style}), Art=${art}, Note=${note}.
-                
-                Return JSON only:
-                {
-                    "midjourney_prompt": "English prompt v6 highly detailed...",
-                    "vietnamese_desc": "Vietnamese visual description..."
-                }`;
-
-                const data = await callGemini(prompt);
-
-                document.getElementById('loadingUI').classList.add('hidden');
-                document.getElementById('step3').classList.remove('hidden');
-                
-                document.getElementById('finalPrompt').innerText = data.midjourney_prompt + " --ar 16:9 --v 6.0 --style raw";
-                document.getElementById('vnDescription').innerText = data.vietnamese_desc;
-
-            } catch (e) {
-                document.getElementById('loadingUI').classList.add('hidden');
-                document.getElementById('step2').classList.remove('hidden');
-                alert("Lỗi tạo prompt: " + e.message + "\n(Hãy thử đổi Model)");
-            }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        if(!localStorage.getItem('gemini_api_key')) document.getElementById('apiKeyModal').classList.remove('hidden');
-    </script>
+        /* Card Style Chung */
+        .result-card {
+            background-color: #141414;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+        }
+
+        /* Header của từng Card */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* Màu tiêu đề riêng biệt */
+        .title-en { color: #60a5fa; /* Xanh dương nhạt */ }
+        .title-vi { color: #f87171; /* Đỏ cam nhạt */ }
+
+        /* Nút Sao chép */
+        .btn-copy {
+            background-color: transparent;
+            border: 1px solid #444;
+            color: #e5e5e5;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover {
+            background-color: #333;
+            border-color: #666;
+        }
+
+        /* Nội dung văn bản Prompt */
+        .prompt-content {
+            background-color: transparent; /* Hoặc màu nền nhẹ nếu muốn */
+            color: #d4d4d4;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: justify;
+            word-spacing: 1px;
+        }
+
+        /* Phần Tăng cường nhanh (Footer Card) */
+        .enhance-header {
+            color: #e5e5e5;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .enhance-header i {
+            color: #c084fc; /* Màu tím nhạt icon */
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .enhance-input {
+            flex-grow: 1;
+            background-color: #262626;
+            border: 1px solid #404040;
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .enhance-input::placeholder {
+            color: #666;
+        }
+
+        .enhance-input:focus {
+            border-color: #60a5fa;
+        }
+
+        .btn-submit {
+            background-color: #3b2847; /* Màu nền tím đậm của nút */
+            border: 1px solid #4c1d95;
+            color: #d8b4fe; /* Màu chữ tím nhạt */
+            padding: 0 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-submit:hover {
+            background-color: #4c1d95;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="result-card">
+        <div class="card-header">
+            <h3 class="card-title title-en">Nhắc tiếng Anh</h3>
+            <button class="btn-copy"><i class="fa-regular fa-copy"></i> Sao chép</button>
+        </div>
+        <div class="prompt-content">
+            Một chiếc iPhone 16 siêu thực, hoàn hảo với thiết kế chưa từng thấy, được đặt chính giữa, trưng bày trên một giá đỡ tối giản, có đèn chiếu sáng, màn hình tỏa sáng với giao diện người dùng phức tạp, mang hơi hướng tương lai. Chiếc điện thoại sở hữu ống kính camera tiên tiến và thiết kế nguyên khối mượt mà, được hiển thị với độ phân giải 8K, kết cấu chi tiết cao và độ sâu trường ảnh, dưới ánh sáng điện ảnh. Môi trường là một studio hiện đại, sạch sẽ, công nghệ cao với các bề mặt phản chiếu tinh tế và ánh sáng xung quanh khuếch tán. Phông nền có một mẫu giao diện dữ liệu trừu tượng tinh tế, hơi mờ với hiệu ứng ánh sáng xanh lam và tím nhẹ, gợi lên sự đổi mới và công nghệ tiên tiến. Văn bản khổng lồ phủ lên trên "" với kiểu chữ khối 3D đậm, phản chiếu bóng bẩy, màu sắc sống động tương phản với nền, hơi nghiêng và bóng đổ đậm, được đặt ở vị trí trung tâm phía trên. Phong cách: Siêu thực, chụp bằng Sony A7R IV. --ar 16:9 --v 6.0 --style raw
+        </div>
+    </div>
+
+    <div class="result-card">
+        <div class="card-header">
+            <h3 class="card-title title-vi">Nhắc Tiếng Việt (Mô tả chi tiết)</h3>
+            <button class="btn-copy"><i class="fa-regular fa-copy"></i> Sao chép</button>
+        </div>
+        <div class="prompt-content">
+            Một chiếc iPhone 16 siêu thực, hoàn hảo với thiết kế chưa từng thấy, đặt chính giữa khung hình, được trưng bày trên một mức giá tối giản, có đèn chiếu sáng. Màn hình điện thoại phát sáng với giao diện người dùng phức tạp, tương lai, có thể hiện sự thay đổi mới và công nghệ tiên tiến. Điện thoại có camera ống kính tiên tiến và khối nguyên thiết kế, được xuất ra với độ phân giải 8k, cấu hình chi tiết cao và trường ảnh sâu, dưới ánh sáng. Môi trường là một phòng studio công nghệ cao, hiện đại, sạch sẽ với các bề mặt phản chiếu tinh tế và ánh sáng phân tán. Nền phía sau có họa tiết vật liệu vật thể, phức hợp, hơi mờ với hiệu ứng thương mại sáng xanh lam và tím mềm. Vị trí trung tâm phía trên có một lớp phủ văn bản lớn "" với kiểu chữ 3D khối đổ bảy, bóng bẩy, màu sắc rực rỡ tương phản với nền, hơi nghiêng và có bóng bóng dày. Phong cách Siêu thực, chụp bằng Sony A7R IV, đậm chất điện ảnh.
+        </div>
+    </div>
+
+    <div class="result-card" style="padding: 16px 24px;"> <div class="enhance-header">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Tăng cường nhanh chóng
+        </div>
+        <div class="input-group">
+            <input type="text" class="enhance-input" placeholder="Nhập yêu cầu chỉnh sửa (Ví dụ: Thêm sét vào nền, bỏ kính của nhân vật...)">
+            <button class="btn-submit">Đăng ký Prompt</button>
+        </div>
+    </div>
+
+</div>
+
 </body>
 </html>
